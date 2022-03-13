@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/order
+Content-Type: application/json
+
+{
+  "order_id": 1,
+  "price": 1000,
+  "title": "burger"
+}
+
