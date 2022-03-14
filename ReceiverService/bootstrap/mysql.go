@@ -14,6 +14,7 @@ var mysqlOnce sync.Once
 var MysqlClient *gorm.DB
 
 func RunMysql() {
+	// Create the database connection for once
 	mysqlOnce.Do(func() {
 		var err error
 		mysqlHost := os.Getenv("MYSQL_HOST")

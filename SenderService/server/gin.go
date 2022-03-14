@@ -11,20 +11,8 @@ import (
 )
 
 func RunGin() {
-	gin.ForceConsoleColor()
-
-	file, _ := os.Create("./logs/gin.log")
-	gin.DefaultWriter = io.MultiWriter(file)
-
-	r := gin.Default()
-	r.Use(gin.Logger())
-
-	r.Use(gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
-		if err, ok := recovered.(string); ok {
-			c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
-		}
-		c.AbortWithStatus(http.StatusInternalServerError)
-	}))
+	// Initialize the Gin router as the default one
+	r := InitGin()
 
 	api := r.Group("api")
 	{
@@ -33,4 +21,24 @@ func RunGin() {
 
 	err := r.Run(os.Getenv("SERVER_PORT"))
 	utilities.Error(err)
+}
+
+func InitGin() *gin.Engine {
+	gin.ForceConsoleColor()
+
+	// Create logger for Gin
+	file, _ := os.Create("./logs/gin.log")
+	gin.DefaultWriter = io.MultiWriter(file)
+
+	r := gin.Default()
+	r.Use(gin.Logger())
+
+	// Set Recover middleware for preventing panic
+	r.Use(gin.CustomRecovery(func(c *gin.Context, recovered interface{}) {
+		if err, ok := recovered.(string); ok {
+			c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}))
+	return r
 }

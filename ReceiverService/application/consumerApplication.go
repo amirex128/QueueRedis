@@ -2,9 +2,7 @@ package application
 
 import (
 	"ReceiverService/bootstrap"
-	"ReceiverService/model/dto"
 	"ReceiverService/utilities"
-	"encoding/json"
 	"fmt"
 	"github.com/adjust/rmq/v4"
 	"os"
@@ -18,20 +16,23 @@ const (
 	pollDuration  = 100 * time.Millisecond
 )
 
-func ConsumeOrder() {
-
+func StartConsumeOrder() {
+	// initialize the bootstrap for start consuming
 	queue := bootstrap.TaskQueue
 	err := queue.StartConsuming(prefetchLimit, pollDuration)
 	utilities.Error(err)
 
+	// Add function to handle messages
 	_, err = queue.AddConsumerFunc(fmt.Sprintf("consume"), func(delivery rmq.Delivery) {
-		order := new(dto.OrderRequest)
-		if err := json.Unmarshal([]byte(delivery.Payload()), order); err != nil {
-			fmt.Println("Error unmarshalling order: ", err)
-		}
-		CreateOrder(order)
+		CreateOrder(delivery.Payload())
 	})
 	utilities.Error(err)
+
+	// Wait for a SIGINT (perhaps triggered by user with CTRL-C)
+	exitProcess()
+}
+
+func exitProcess() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT)
 	defer signal.Stop(signals)

@@ -4,17 +4,18 @@ import (
 	"SenderService/bootstrap"
 	"SenderService/model/dto"
 	"encoding/json"
-	"fmt"
 )
 
 func OrderToQueue(order *dto.OrderRequest) bool {
 
+	// get redis client
 	queue := bootstrap.TaskQueue
+	// marshal order to json
 	marshal, err := json.Marshal(*order)
 	if err != nil {
 		return false
 	}
-	fmt.Println(string(marshal))
+	// push order to queue
 	err = queue.PublishBytes(marshal)
 	if err != nil {
 		return false
